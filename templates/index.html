@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td,
+    th {
+        border: 1px solid #cccccc;
+        padding: 20x;
+        margin: 10px;
+        text-align: left;
+    }
+
+    .delete-button {
+        color: #ef4444;
+
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        float: middle;
+        margin-right: 20px;
+        margin-top: 5px;
+        y: 5px;
+
+        border: 2px solid #ef4444;
+        border-radius: 50%;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .delete-button svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .delete-button:hover,
+    .delete-button:focus-visible {
+        background-color: #ef4444;
+        color: #ffffff;
+    }
+
+    .delete-button:focus-visible {
+        outline: 2px solid #ef4444;
+        outline-offset: 3px;
+    }
+
+    .delete-button:active {
+        transform: translateY(1px);
+    }
+</style>
+
+<h1>Available downloads for {{ username }}:</h1>
+<br>
+
+{% for file in files %}
+<div class="row mb-4 align-items-end">
+    <div class="col-md-1"></div>
+    <form action="{{ url_for('delete_file', filename=file) }}" method="post" style="display:inline;" class="col-md-1">
+        <button type="submit" class="delete-button"
+            onclick="return confirm('Are you sure you want to delete this file?');">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </form>
+    <a class="col-md-8" href="{{ url_for('download_file', filename=file) }}">{{ file }}</a>
+</div>
+
+{% endfor %}
+
+
+{% endblock %}

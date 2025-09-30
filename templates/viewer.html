@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .table-container {
+            width: 80vw;
+            max-height: 60vh;
+            overflow-y: auto;
+            overflow-x: auto;
+            display: inline-block;
+            border: black 1px solid;
+            x: 0px;
+        }
+
+        #demo {
+            border-collapse: collapse;
+            x: 0px;
+            y: 0px;
+
+        }
+
+        #demo tr:nth-child(odd) {
+            background: #f2f2f2;
+        }
+
+        #demo td {
+            padding: 10px;
+            border: black 1px solid;
+        }
+
+        /* Make the back button and the heading on the same line, back button should be behind the heading */
+        a.btn {
+            float: left;
+            margin-right: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Button to go back to the view page -->
+    <a class="btn btn-primary mb-3" href="/view" role="button">Back</a>
+    <div>
+        <h3>{{ title }}</h3>
+    </div>
+    <br>
+    <div class="table-container">
+        <table id="demo">
+            {% for row in range(1, sheet.max_row + 1) %}
+            <tr>
+                {% for col in range(1, sheet.max_column + 1): %}
+                <td>{{ sheet.cell(row, col).value if sheet.cell(row, col).value is not none else '' }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+</body>
+
+</html>
+{% endblock %}

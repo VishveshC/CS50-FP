@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Manage College
+{% endblock %}
+
+{% block main %}
+<script id="colleges-data" type="application/json">
+    {{ colleges | tojson }}
+</script>
+<script>
+    const collegesData = JSON.parse(document.getElementById('colleges-data').textContent);
+</script>
+
+<div class="container mt-4">
+    <h1>Manage College Information:</h1>
+    <br>
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label for="college-select" class="form-label">Select College to Edit</label>
+                    <select class="form-select" id="college-select" name="college_id">
+                        <option value="None" selected>Create New College</option>
+                        {% for college in colleges %}
+                        <option value="{{ college.id }}">{{ college.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="college-name" class="form-label">College Name</label>
+                    <input class="form-control" type="text" id="college-name" name="college_name"
+                        placeholder="Enter name for new or selected college" required>
+                </div>
+                <div class="mb-3">
+                    <label for="logo-upload" class="form-label">Upload New Logo (Optional)</label>
+                    <input class="form-control" type="file" id="logo-upload" name="logo" accept="image/*">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Logo Preview</label>
+                <div class="border rounded p-2 d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <img id="logo-preview" src="#" alt="" class="img-fluid" style="display: none; max-height: 180px;">
+                    <span id="no-logo-text"></span>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary mt-3" type="submit">Save Changes</button>
+    </form>
+</div>
+
+<script>
+    // Get references to the HTML elements
+    const collegeSelect = document.getElementById('college-select');
+    const collegeNameInput = document.getElementById('college-name');
+    const logoUpload = document.getElementById('logo-upload');
+    const logoPreview = document.getElementById('logo-preview');
+    const noLogoText = document.getElementById('no-logo-text');
+
+    // Function to update the form fields based on dropdown selection
+    function updateForm(collegeId) {
+        const college = collegesData.find(c => c.id == collegeId);
+
+        if (college) {
+            // Fill form with data of the selected college
+            collegeNameInput.value = college.name;
+            if (college.logo_path) {
+                // Construct the full URL for the image
+                logoPreview.src = `{{ url_for('static', filename='') }}${college.logo_path}`;
+                ogoPreview.style.display = 'block';
+                noLogoText.style.display = 'none';
+            } else {
+                resetPreview();
+            }
+        } else {
+            // Reset form for "Create New College" option
+            collegeNameInput.value = '';
+            resetPreview();
+        }
+    }
+
+    // Function to reset the preview area
+    function resetPreview() {
+        logoPreview.style.display = 'block';
+        logoPreview.src = '#'; // Clear the image source
+        noLogoText.style.display = 'block';
+    }
+
+    // Event listener for dropdown changes
+    collegeSelect.addEventListener('change', function () {
+        updateForm(this.value);
+    });
+
+    // Event listener for file input to show preview of the NEW logo
+    logoUpload.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            // Use FileReader to create a temporary local URL for the selected file
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                logoPreview.src = e.target.result;
+                logoPreview.style.display = 'block';
+                noLogoText.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Initialize the form on page load
+    updateForm(collegeSelect.value);
+</script>
+{% endblock %}

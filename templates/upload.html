@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Upload
+{% endblock %}
+
+{% block main %}
+{% if not subjects %}
+<form method="post" enctype="multipart/form-data">
+    <div class="row mb-4 align-items-end">
+        <div class="col-md-8">
+            <h1>Upload Result PDF:</h1>
+            <br><br>
+            <label for="college-select" class="form-label">College Branding</label>
+            <select class="form-select" id="college-select" name="college_id" required>
+                <option value="" disabled selected>Select a College</option>
+                {% for college in colleges %}
+                <option value="{{ college.id }}">{{ college.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Logo Preview</label>
+            <div class="border rounded p-2 d-flex align-items-center justify-content-center" style="height: 200px;">
+                <img id="logo-preview" src="#" alt="Logo Preview" class="img-fluid"
+                    style="display: none; max-height: 180px;">
+                <span id="no-logo-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="file-input" class="form-label">Select Result PDF</label>
+                <input class="form-control" type="file" name="file" id="file-input" required>
+            </div>
+            <div class="mb-3">
+                <label for="academic-year-select" class="form-label">Academic Year</label>
+                <select class="form-select" id="academic-year-select" name="academic_year" required>
+                    <option value="" disabled selected>Select a Year</option>
+                    <option value="2025-26">2025-26</option>
+                    <option value="2024-25">2024-25</option>
+                    <option value="2023-24">2023-24</option>
+                    <option value="2022-23">2022-23</option>
+                    <option value="2021-22">2021-22</option>
+                    <option value="2020-21">2020-21</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="semester-select" class="form-label">Semester</label>
+                <select class="form-select" id="semester-select" name="semester" required>
+                    <option value="" disabled selected>Select a Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="result-type-input" class="form-label">Result Name</label>
+                <input class="form-control" id="result-type-input" name="result_type"
+                    placeholder="e.g., Summer 2025 (Regular)" type="text" required>
+            </div>
+            <div class="mb-3">
+                <label for="department-input" class="form-label">Department</label>
+                <input class="form-control" id="department-input" name="department"
+                    placeholder="e.g., Computer Engineering" type="text" required>
+            </div>
+            <div class="mb-3">
+                <label for="course-code-input" class="form-label">Course Code</label>
+                <input class="form-control" id="course-code-input" name="course_code" placeholder="e.g., 12118"
+                    type="text" required>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 text-center">
+        <button class="btn btn-primary" type="submit">Upload</button>
+    </div>
+</form>
+<script id="colleges-data" type="application/json">
+    {{ colleges | tojson }}
+</script>
+<script>
+    const collegesData = JSON.parse(document.getElementById('colleges-data').textContent);
+
+    const collegeSelect = document.getElementById('college-select');
+    const logoPreview = document.getElementById('logo-preview');
+    const noLogoText = document.getElementById('no-logo-text');
+
+    if (collegeSelect) {
+        function updatePreview(collegeId) {
+            const college = collegesData.find(c => c.id == collegeId);
+
+            if (college && college.logo_path) {
+                logoPreview.src = `/static/${college.logo_path}`;
+                logoPreview.style.display = 'block';
+                noLogoText.style.display = 'none';
+            } else {
+                logoPreview.style.display = 'none';
+                logoPreview.src = '#';
+                noLogoText.style.display = 'block';
+            }
+        }
+
+        collegeSelect.addEventListener('change', function () {
+            updatePreview(this.value);
+        });
+
+        updatePreview(collegeSelect.value);
+    }
+</script>
+{% elif subjects %}
+<form method="post" enctype="multipart/form-data" id="form">
+    <h3 class="mt-4">Assign Subject Teachers</h3>
+    <br>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Subject Code</th>
+                <th>Subject Name</th>
+                <th>Teacher Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+            <tr>
+                <td>{{ subject[0] }}</td>
+                <td>{{ subject[1] }}</td>
+                <td>
+                    <input class="form-control" type="text" name="teacher_{{ subject[0] }}"
+                        placeholder="Enter Teacher Name" required>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button class="btn btn-primary" type="submit">Submit Teachers</button>
+    <input type="hidden" name="teachers_are_being_submitted" value="true">
+</form>
+<script>
+    // After submit teachers is clicked, disable the button to prevent multiple submissions and redirect to / after 2 seconds
+    const myForm = document.querySelector('#form');
+    const submitButton = myForm.querySelector('button[type="submit"]');
+    if (myForm) {
+        myForm.addEventListener('submit', function () {
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerText = 'Submitting...';
+            }
+            this.disabled = true;
+            setTimeout(function () {
+                window.location.href = "/";
+            }, 2000); // Redirect after 2 seconds
+        });
+    }
+</script>
+{% else %}
+<div class="alert alert-warning" role="alert">
+    There was an issue with the upload process. Please try again.
+</div>
+<script>
+    setTimeout(function () {
+        window.location.href = "/upload";
+    }, 2000); // Redirect after 2 seconds
+</script>
+{% endif %}
+
+{% endblock %}
